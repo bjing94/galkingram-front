@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AiFillHeart,
   AiOutlineHeart,
@@ -7,13 +7,15 @@ import {
   AiOutlineSend,
   AiOutlineSmile,
 } from "react-icons/ai";
-import { BsBookmark } from "react-icons/bs";
+import { BsBookmark, BsBookmarkFill } from "react-icons/bs";
 import styled from "styled-components";
-import { Comment, Like } from "../../services/response/post-response";
 import { User } from "../../services/response/user-response";
 import * as Yup from "yup";
 import { createComment } from "../../services/CommentService";
 import authStore from "../../store/auth-store";
+import { bookmarkPost, likePost } from "../../services/PostService";
+import Like from "../../services/response/like-response";
+import Comment from "../../services/response/comment-response";
 
 const FooterContainer = styled.div`
   position: relative;
@@ -157,12 +159,48 @@ export default function PostFooter({
   createdAt,
   postId,
 }: FooterProps) {
-  const handleLike = () => {};
+  const [bookmarked, setBookmarked] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes.length);
+
+  const [currentComments, setCurrentComments] = useState(
+    comments.sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+  );
+
+  useEffect(() => {
+    setLiked(likes.findIndex((item) => item.user.id === authStore.id) !== -1);
+    setBookmarked(
+      authStore.bookmarks.findIndex((item) => item.post.id === postId) !== -1
+    );
+  }, []);
+
+  const handleLike = () => {
+    likePost(postId).then((response) => {
+      console.log(response.data);
+      if (liked) {
+        setLikeCount(likeCount - 1);
+      } else {
+        setLikeCount(likeCount + 1);
+      }
+      setLiked(!liked);
+    });
+  };
+
+  const handleBookmark = () => {
+    bookmarkPost(postId).then((response) => {
+      console.log(response.data);
+      setBookmarked(!bookmarked);
+    });
+  };
 
   const selections = media.map((item, idx) => {
-    if (idx === activeIdx) return <SelectionItem className="selected" />;
+    if (idx === activeIdx)
+      return <SelectionItem className="selected" key={idx} />;
 
-    return <SelectionItem />;
+    return <SelectionItem key={idx} />;
   });
 
   const formik = useFormik({
@@ -183,6 +221,9 @@ export default function PostFooter({
       })
         .then((response) => {
           console.log(response);
+          const newComments = [...currentComments];
+          newComments.push(response.data);
+          setCurrentComments(newComments);
         })
         .catch((err) => {
           console.log(err);
@@ -190,9 +231,9 @@ export default function PostFooter({
     },
   });
 
-  const commentElements = comments.map((item) => {
+  const commentElements = currentComments.map((item) => {
     return (
-      <CommentContainer>
+      <CommentContainer key={item.id}>
         <CommentContent>
           <span>{item.user.username}</span> {item.body}
         </CommentContent>
@@ -203,7 +244,6 @@ export default function PostFooter({
     );
   });
 
-  const liked = likes.findIndex((item) => item.user.id === authStore.id) !== -1;
   return (
     <FooterContainer>
       <IconsContainer>
@@ -221,11 +261,11 @@ export default function PostFooter({
           <AiOutlineSend size={28} />
         </IconButton>
 
-        <BookmarkButton>
-          <BsBookmark size={28} />
+        <BookmarkButton onClick={handleBookmark}>
+          {bookmarked ? <BsBookmarkFill size={28} /> : <BsBookmark size={28} />}
         </BookmarkButton>
       </IconsContainer>
-      <LikesAmount>{likes.length} likes</LikesAmount>
+      <LikesAmount>{likeCount} likes</LikesAmount>
       <PostDescription>
         <span>{user.username}</span> {description}
       </PostDescription>

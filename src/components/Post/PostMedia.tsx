@@ -39,6 +39,7 @@ export default function PostMedia({
         onClick={() => {
           setActiveIdx(idx + 1);
         }}
+        key={idx}
       />
     );
   });

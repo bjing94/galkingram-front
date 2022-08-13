@@ -78,7 +78,6 @@ function Homepage() {
   }, []);
 
   const postElements = postStore.posts.map((item) => {
-    console.log(item);
     return (
       <Post
         key={item.id}

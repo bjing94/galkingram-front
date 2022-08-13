@@ -1,6 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { CheckAuth, GetProfile, Login } from "../services/AuthService";
 import LoginDto from "../services/dto/login.dto";
+import BookmarkResponse from "../services/response/bookmark-response";
+import Like from "../services/response/like-response";
 
 class AuthStore {
   auth: boolean = false;
@@ -8,6 +10,8 @@ class AuthStore {
   username: string = "";
   email: string = "";
   createdAt: Date = new Date();
+  bookmarks: BookmarkResponse[] = [];
+  likes: Like[] = [];
 
   constructor() {
     makeAutoObservable(this);
@@ -32,10 +36,16 @@ class AuthStore {
     GetProfile().then((response) => {
       const user = response.data;
       this.username = user.username;
-      this.email = user.email;
-      this.createdAt = new Date(user.createdAt);
+      this.email = user.email ?? "";
+      this.createdAt = new Date(user.created_at);
       this.id = user.id;
+      this.bookmarks = user.bookmarks;
+      this.likes = user.likes;
     });
+  }
+
+  getBookmarks() {
+    return this.bookmarks;
   }
 
   checkAuthentication() {

@@ -1,26 +1,7 @@
+import Img from "./img-response";
+import Like from "./like-response";
 import { User } from "./user-response";
 
-export interface Comment {
-  id: string;
-  user: User;
-  body: string;
-  created_at: string;
-  updated_at: string;
-}
-export interface Like {
-  id: string;
-  user: User;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Img {
-  id: string;
-  src: string;
-  imgType: string;
-  created_at: string;
-  updated_at: string;
-}
 interface PostImg {
   id: string;
   img: Img;

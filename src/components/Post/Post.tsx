@@ -9,7 +9,7 @@ import {
 import { BsBookmark } from "react-icons/bs";
 
 import styled from "styled-components";
-import { Img } from "../../services/response/post-response";
+import Img from "../../services/response/img-response";
 import { User } from "../../services/response/user-response";
 import PostFooter from "./PostFooter";
 import PostHeader from "./PostHeader";
