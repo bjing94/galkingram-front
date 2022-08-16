@@ -1,3 +1,4 @@
+import Comment from "./comment-response";
 import Img from "./img-response";
 import Like from "./like-response";
 import { User } from "./user-response";

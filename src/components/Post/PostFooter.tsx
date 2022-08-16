@@ -16,27 +16,11 @@ import authStore from "../../store/auth-store";
 import { bookmarkPost, likePost } from "../../services/PostService";
 import Like from "../../services/response/like-response";
 import Comment from "../../services/response/comment-response";
+import PostActions from "./PostActions";
+import CommentInput from "./CommentInput";
 
 const FooterContainer = styled.div`
   position: relative;
-`;
-
-const IconsContainer = styled.div`
-  display: flex;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: 6px;
-`;
-
-const IconButton = styled.button`
-  padding: 8px;
-  border: none;
-  background: none;
-`;
-
-const BookmarkButton = styled(IconButton)`
-  margin-left: auto;
-  padding-right: 0;
 `;
 
 const SelectionContainer = styled.div`
@@ -49,50 +33,10 @@ const SelectionContainer = styled.div`
   height: fit-content;
 `;
 
-const LikesAmount = styled.div`
-  padding-left: 20px;
-  margin-bottom: 10px;
-  font-weight: bold;
-`;
-
 const DatePosted = styled.div`
   padding-left: 20px;
   margin-bottom: 10px;
   color: #8e8e8e;
-`;
-
-const CreateCommentWrapper = styled.form`
-  width: 100%;
-  border-top: solid 1px #dbdbdb;
-  padding: 4px 12px;
-`;
-
-const CommentInputContainer = styled.div`
-  display: flex;
-  width: 100%;
-  height: 40px;
-
-  & input {
-    background: none;
-    border: none;
-    flex-grow: 1;
-
-    &:focus {
-      outline: none;
-    }
-  }
-`;
-
-const CreateCommentButton = styled.button`
-  background: none;
-  border: none;
-  color: #0095f6;
-  font-size: 14px;
-  font-weight: bold;
-`;
-
-const SelectEmojiButton = styled(IconButton)`
-  padding-left: 0;
 `;
 
 const PostDescription = styled.div`
@@ -107,6 +51,7 @@ const PostDescription = styled.div`
 const CommentSection = styled.div`
   padding-left: 20px;
   padding-right: 20px;
+  margin-bottom: 10px;
 `;
 
 const CommentContainer = styled.div``;
@@ -159,10 +104,6 @@ export default function PostFooter({
   createdAt,
   postId,
 }: FooterProps) {
-  const [bookmarked, setBookmarked] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes.length);
-
   const [currentComments, setCurrentComments] = useState(
     comments.sort(
       (a, b) =>
@@ -170,65 +111,11 @@ export default function PostFooter({
     )
   );
 
-  useEffect(() => {
-    setLiked(likes.findIndex((item) => item.user.id === authStore.id) !== -1);
-    setBookmarked(
-      authStore.bookmarks.findIndex((item) => item.post.id === postId) !== -1
-    );
-  }, []);
-
-  const handleLike = () => {
-    likePost(postId).then((response) => {
-      console.log(response.data);
-      if (liked) {
-        setLikeCount(likeCount - 1);
-      } else {
-        setLikeCount(likeCount + 1);
-      }
-      setLiked(!liked);
-    });
-  };
-
-  const handleBookmark = () => {
-    bookmarkPost(postId).then((response) => {
-      console.log(response.data);
-      setBookmarked(!bookmarked);
-    });
-  };
-
   const selections = media.map((item, idx) => {
     if (idx === activeIdx)
       return <SelectionItem className="selected" key={idx} />;
 
     return <SelectionItem key={idx} />;
-  });
-
-  const formik = useFormik({
-    initialValues: {
-      commentInput: "",
-    },
-    validationSchema: Yup.object({
-      commentInput: Yup.string()
-        .max(200, "Must be 200 characters or less")
-        .required("Required"),
-    }),
-    onSubmit: (values) => {
-      console.log(values);
-
-      createComment({
-        postId: postId,
-        body: values.commentInput,
-      })
-        .then((response) => {
-          console.log(response);
-          const newComments = [...currentComments];
-          newComments.push(response.data);
-          setCurrentComments(newComments);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    },
   });
 
   const commentElements = currentComments.map((item) => {
@@ -243,29 +130,11 @@ export default function PostFooter({
       </CommentContainer>
     );
   });
-
+  let Difference_In_Time = Date.now() - createdAt.getTime();
+  let Difference_In_Days = Math.floor(Difference_In_Time / (1000 * 3600 * 24));
   return (
     <FooterContainer>
-      <IconsContainer>
-        <IconButton onClick={handleLike}>
-          {liked ? (
-            <AiFillHeart size={28} fill="red" />
-          ) : (
-            <AiOutlineHeart size={28} />
-          )}
-        </IconButton>
-        <IconButton>
-          <AiOutlineMessage size={28} />
-        </IconButton>
-        <IconButton>
-          <AiOutlineSend size={28} />
-        </IconButton>
-
-        <BookmarkButton onClick={handleBookmark}>
-          {bookmarked ? <BsBookmarkFill size={28} /> : <BsBookmark size={28} />}
-        </BookmarkButton>
-      </IconsContainer>
-      <LikesAmount>{likeCount} likes</LikesAmount>
+      <PostActions likes={likes} postId={postId} />
       <PostDescription>
         <span>{user.username}</span> {description}
       </PostDescription>
@@ -273,23 +142,12 @@ export default function PostFooter({
         <ShowCommentsButton>Show all comments</ShowCommentsButton>
         {commentElements}
       </CommentSection>
-      <DatePosted>{createdAt.toDateString()}</DatePosted>
-      <CreateCommentWrapper onSubmit={formik.handleSubmit}>
-        <CommentInputContainer>
-          <SelectEmojiButton>
-            <AiOutlineSmile size={24} />
-          </SelectEmojiButton>
-          <input
-            id="commentInput"
-            name="commentInput"
-            placeholder="Ваш комментарий"
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            value={formik.values.commentInput}
-          />
-          <CreateCommentButton type="submit">Create</CreateCommentButton>
-        </CommentInputContainer>
-      </CreateCommentWrapper>
+      <DatePosted>{`${Difference_In_Days} days ago`}</DatePosted>
+      <CommentInput
+        postId={postId}
+        currentComments={currentComments}
+        setCurrentComments={setCurrentComments}
+      />
       <SelectionContainer>{selections}</SelectionContainer>
     </FooterContainer>
   );

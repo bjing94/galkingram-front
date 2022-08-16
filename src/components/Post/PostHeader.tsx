@@ -6,6 +6,7 @@ const HeaderContainer = styled.div`
   display: flex;
   align-items: center;
   height: 58px;
+  border-bottom: 1px solid #dbdbdb;
 `;
 const PostUser = styled.div`
   display: flex;

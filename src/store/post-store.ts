@@ -4,7 +4,7 @@ import { Post } from "../services/response/post-response";
 
 class PostStore {
   posts: Post[] = [];
-
+  activePost: Post | null = null;
   constructor() {
     makeAutoObservable(this);
   }
@@ -14,6 +14,10 @@ class PostStore {
       this.posts = response.data;
       console.log(response.data);
     });
+  }
+
+  setActivePost(post: Post | null) {
+    this.activePost = post;
   }
 }
 

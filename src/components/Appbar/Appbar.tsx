@@ -7,7 +7,9 @@ import {
   AiOutlineMessage,
   AiOutlinePlusSquare,
 } from "react-icons/ai";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
+import authStore from "../../store/auth-store";
 import Input from "./Input";
 
 const StyledAppbar = styled.div`
@@ -66,7 +68,9 @@ export default function Appbar() {
             <AiOutlinePlusSquare size={24} />
             <AiOutlineCompass size={24} />
             <AiOutlineHeart size={24} />
-            <AiFillCiCircle size={24} />
+            <Link to={`${authStore.username}`}>
+              <AiFillCiCircle size={24} />
+            </Link>
           </IconsContainer>
         </IconsWrapper>
       </AppbarContent>

@@ -7,12 +7,12 @@ import authStore from "../store/auth-store";
 import ProfileAvatar from "../components/ProfileAvatar";
 import Button from "../components/Button";
 import postStore from "../store/post-store";
+import PostPopup from "../components/PostPopup/PostPopup";
+import { getAllUsers } from "../services/user.service";
+import { User } from "../services/response/user-response";
 
 const HomepageWrapper = styled.div`
   display: flex;
-  width: 935px;
-  margin: 0 auto;
-  padding-top: 30px;
 `;
 
 const ProfileInfo = styled.div`
@@ -60,7 +60,7 @@ const RecommendedProfile = styled.div`
   width: 100%;
 
   & button {
-    margin-left: 8px;
+    margin-left: auto;
   }
 `;
 
@@ -73,8 +73,13 @@ const RecommendationSection = styled.div`
 `;
 
 function Homepage() {
+  const [recommendedUsers, setRecommendedUsers] = useState<User[]>([]);
+
   useEffect(() => {
     postStore.fetchPosts();
+    getAllUsers().then((response) => {
+      setRecommendedUsers(response.data);
+    });
   }, []);
 
   const postElements = postStore.posts.map((item) => {
@@ -82,7 +87,7 @@ function Homepage() {
       <Post
         key={item.id}
         description={item.description}
-        width={625}
+        width={614}
         likes={item.likes}
         comments={item.comments}
         media={item.post_imgs.map((item) => item.img)}
@@ -90,6 +95,19 @@ function Homepage() {
         createdAt={new Date(item.created_at)}
         postId={item.id}
       />
+    );
+  });
+
+  const userElements = recommendedUsers.map((item) => {
+    return (
+      <RecommendedProfile>
+        <ProfileAvatar size={30} />
+        <ProfileLink>
+          {item.username}
+          {/* <span id="user-fullname">Subscribed: test1,test2, test3, text4</span> */}
+        </ProfileLink>
+        <Button>Подписаться</Button>
+      </RecommendedProfile>
     );
   });
   return (
@@ -106,38 +124,7 @@ function Homepage() {
         </ProfileContent>
         {/* Recommendations */}
         <RecommendationSection>Рекомендации для вас</RecommendationSection>
-        <RecommendedProfile>
-          <ProfileAvatar size={30} />
-          <ProfileLink>
-            {authStore.username}
-            {/* Подписаны: senkanatari */}
-            <span id="user-fullname">
-              Subscribed: test1,test2, test3, text4
-            </span>
-          </ProfileLink>
-          <Button>Подписаться</Button>
-        </RecommendedProfile>
-        <RecommendedProfile>
-          <ProfileAvatar size={30} />
-          <ProfileLink>
-            {authStore.username}
-            {/* Подписаны: senkanatari */}
-            <span id="user-fullname">
-              Subscribed: test1,test2, test3, text4
-            </span>
-          </ProfileLink>
-          <Button>Подписаться</Button>
-        </RecommendedProfile>
-        <RecommendedProfile>
-          <ProfileAvatar size={30} />
-          <ProfileLink>
-            {authStore.username}
-            <span id="user-fullname">
-              Subscribed: test1,test2, test3, text4
-            </span>
-          </ProfileLink>
-          <Button>Подписаться</Button>
-        </RecommendedProfile>
+        {userElements}
       </ProfileInfo>
     </HomepageWrapper>
   );

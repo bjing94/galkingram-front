@@ -19,4 +19,7 @@ const bookmarkPost = async (postId: string) => {
   });
 };
 
-export { getPosts, likePost, bookmarkPost };
+const getUserPosts = async (username: string) => {
+  return axiosInstance.get(`post/created/${username}`);
+};
+export { getPosts, likePost, bookmarkPost, getUserPosts };
